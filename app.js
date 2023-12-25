@@ -32,7 +32,8 @@ app.post('/api/resume-data', async (req, res) => {
 
         const data = {
             resume_data: resume_data,
-            createdAt: new Date()
+            createdAt: new Date(),
+            updatedAt: new Date()
         }
 
         const insertResult = await collection.insertOne(data);
@@ -113,6 +114,50 @@ app.get('/api/resume-data/:id', async (req, res) => {
         return res.status(200).json({
             message: 'Data fetched successfully',
             data: fetchedData,
+        });
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return res.status(500).json({ message: 'Error fetching data' });
+    }
+});
+
+app.put('/api/resume-data/:id', async (req, res) => {
+    try {
+        const id = req.params.id; // Extracting the ID from request parameters
+        const { resume_data } = req.body;
+
+        const client = new MongoClient(url, { useUnifiedTopology: true });
+
+        console.log('Connecting to MongoDB...');
+        await client.connect();
+        console.log('Connected to MongoDB');
+
+        const db = client.db(dbName);
+        const collection = db.collection(collectionName);
+
+        // Create a filter for movies with the title "Random Harvest"
+        const filter = { _id: new ObjectId(id) };
+        /* Set the upsert option to insert a document if no documents match
+        the filter */
+        const options = { upsert: true, returnNewDocument: true };
+        // Specify the update to set a value for the plot field
+        const updateDoc = {
+            $set: {
+                resume_data: resume_data,
+                updatedAt: new Date()
+
+            },
+        };
+        // Update the first document that matches the filter
+        const updatedData = await collection.updateOne(filter, updateDoc, options);
+        //  const fetchedData = await collection.find().toArray();
+
+        const data = await collection.findOne({ _id: new ObjectId(id) });
+        await client.close();
+
+        return res.status(200).json({
+            message: 'Data updated successfully',
+            data,
         });
     } catch (error) {
         console.error('Error fetching data:', error);
