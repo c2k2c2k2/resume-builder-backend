@@ -165,6 +165,21 @@ app.put('/api/resume-data/:id', async (req, res) => {
     }
 });
 
+//delete resume-data
+app.delete('/api/resume-data/:id', async (req, res) => {
+    try {
+        
+
+        return res.status(200).json({
+            message: 'Test delete endpoint',
+            data: "OK",
+        });
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return res.status(500).json({ message: 'Error fetching data' });
+    }
+});
+
 
 app.listen(Port, () => {
     console.log("Server running on port 5454");
